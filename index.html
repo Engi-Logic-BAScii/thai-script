@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Thai Consonant Drill</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f6f8;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+
+    .card {
+        background: white;
+        padding: 30px;
+        width: 420px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .title {
+        font-size: 26px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .subtitle {
+        font-size: 20px;
+        margin-bottom: 20px;
+    }
+
+    .start-btn {
+        padding: 14px 26px;
+        font-size: 18px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        background: #007bff;
+        color: white;
+    }
+
+    .start-btn:hover {
+        background: #0069d9;
+    }
+
+    .hearts {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    .letter {
+        font-size: 96px;
+        margin: 10px 0;
+    }
+
+    .choices button {
+        width: 100%;
+        margin: 8px 0;
+        padding: 12px;
+        font-size: 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        background: #e9ecef;
+    }
+
+    .choices button:hover:enabled {
+        background: #dee2e6;
+    }
+
+    .choices button:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .feedback {
+        font-size: 18px;
+        margin-top: 15px;
+        font-weight: bold;
+    }
+
+    .correct { color: green; }
+    .incorrect { color: red; }
+
+    .thai-name {
+        font-size: 22px;
+        margin-top: 5px;
+    }
+
+    .game-over {
+        font-size: 26px;
+        color: red;
+        font-weight: bold;
+        margin-top: 15px;
+    }
+
+    .remaining {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+
+    .hidden {
+        display: none;
+    }
+</style>
+</head>
+<body>
+
+<!-- TITLE CARD -->
+<div id="titleCard" class="card">
+    <div class="title">CSII Team X presents</div>
+    <div class="subtitle">Thai Consonants</div>
+    <input type="text" id="nicknameInput" placeholder="Enter your nickname" style="padding:8px; width:80%; font-size:16px; margin-bottom:15px;">
+    <button class="start-btn" onclick="startQuiz()">Start Quiz</button>
+</div>
+
+<!-- QUIZ CARD -->
+<div id="quizCard" class="card hidden">
+    <div id="nicknameDisplay" class="subtitle"></div>
+    <div id="hearts" class="hearts"></div>
+    <div id="remaining" class="remaining"></div>
+
+    <h2>Thai Consonant Drill</h2>
+    <div id="letter" class="letter"></div>
+
+    <div class="choices">
+        <button onclick="checkAnswer(0)" id="btn0"></button>
+        <button onclick="checkAnswer(1)" id="btn1"></button>
+        <button onclick="checkAnswer(2)" id="btn2"></button>
+    </div>
+
+    <div id="feedback" class="feedback"></div>
+    <div id="thaiName" class="thai-name"></div>
+    <div id="gameOver" class="game-over"></div>
+</div>
+
+<script>
+const consonants = [
+    { letter: "ก", thai: "ก ไก่", latin: "gor gai", class: "middle" },
+    { letter: "ข", thai: "ข ไข่", latin: "khor khai", class: "high" },
+    { letter: "ค", thai: "ค ควาย", latin: "khor kwai", class: "low" },
+    { letter: "ง", thai: "ง งู", latin: "ngor ngu", class: "low" },
+    { letter: "จ", thai: "จ จาน", latin: "jor jan", class: "middle" },
+    { letter: "ฉ", thai: "ฉ ฉิ่ง", latin: "chor ching", class: "high" },
+    { letter: "ช", thai: "ช ช้าง", latin: "chor chang", class: "low" },
+    { letter: "ซ", thai: "ซ โซ่", latin: "sor so", class: "low" },
+    { letter: "ด", thai: "ด เด็ก", latin: "dor dek", class: "middle" },
+    { letter: "ต", thai: "ต เต่า", latin: "tor tao", class: "middle" },
+    { letter: "ถ", thai: "ถ ถุง", latin: "thor thung", class: "high" },
+    { letter: "ท", thai: "ท ทหาร", latin: "thor tahan", class: "low" },
+    { letter: "น", thai: "น หนู", latin: "nor nu", class: "low" },
+    { letter: "บ", thai: "บ ใบไม้", latin: "bor bai-mai", class: "middle" },
+    { letter: "ป", thai: "ป ปลา", latin: "por pla", class: "middle" },
+    { letter: "ผ", thai: "ผ ผึ้ง", latin: "phor phueng", class: "high" },
+    { letter: "ฝ", thai: "ฝ ฝา", latin: "for fa", class: "high" },
+    { letter: "พ", thai: "พ พาน", latin: "phor phan", class: "low" },
+    { letter: "ฟ", thai: "ฟ ฟัน", latin: "for fan", class: "low" },
+    { letter: "ม", thai: "ม ม้า", latin: "mor ma", class: "low" },
+    { letter: "ย", thai: "ย ยักษ์", latin: "yor yak", class: "low" },
+    { letter: "ร", thai: "ร เรือ", latin: "ror ruea", class: "low" },
+    { letter: "ล", thai: "ล ลิง", latin: "lor ling", class: "low" },
+    { letter: "ว", thai: "ว แหวน", latin: "wor waen", class: "low" },
+    { letter: "ส", thai: "ส เสือ", latin: "sor suea", class: "high" },
+    { letter: "ห", thai: "ห หีบ", latin: "hor hip", class: "high" },
+    { letter: "อ", thai: "อ อ่าง", latin: "or ang", class: "middle" },
+    { letter: "ฮ", thai: "ฮ นกฮูก", latin: "hor nok-huk", class: "low" },
+    // Additional consonants
+    { letter: "ฎ", thai: "ฎ ชฎา", latin: "do chada", class: "middle" },
+    { letter: "ฏ", thai: "ฏ ปฎัก", latin: "to patak", class: "middle" },
+    { letter: "ฐ", thai: "ฐ ฐาน", latin: "tho than", class: "high" },
+    { letter: "ฆ", thai: "ฆ ระฆัง", latin: "kho rakhang", class: "low" },
+    { letter: "ญ", thai: "ญ หญิง", latin: "yo ying", class: "low" },
+    { letter: "ศ", thai: "ศ ศาลา", latin: "so sala", class: "high" },
+    { letter: "ษ", thai: "ษ ฤษี", latin: "so ruesi", class: "high" },
+    { letter: "ฬ", thai: "ฬ จุฬา", latin: "lo chu-la", class: "low" }
+];
+
+let current, options = [], correctIndex = 0;
+let lives = 3;
+let gameEnded = false;
+let remainingConsonants = []; // pool of yet-to-be-correctly-answered consonants
+let nickname = ""; // player's nickname to show during quiz
+
+function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+}
+
+function capitalize(s) {
+    if (!s) return "";
+    return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function updateRemaining() {
+    document.getElementById("remaining").textContent =
+        `Remaining: ${remainingConsonants.length}`;
+}
+
+function updateHearts() {
+    document.getElementById("hearts").textContent = "❤️".repeat(lives);
+}
+
+function startQuiz() {
+    // capture nickname and display it
+    nickname = document.getElementById("nicknameInput").value.trim() || "Player";
+    document.getElementById("nicknameDisplay").textContent = nickname;
+
+    // Notify backend that this user started the quiz and show their start count
+    fetch(`https://didactic-tribble-service.onrender.com/api/quiz/start?nickname=${encodeURIComponent(nickname)}`, {
+        method: 'POST'
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+    })
+    .then(data => {
+        // Show nickname followed by the number of starts
+        document.getElementById("nicknameDisplay").textContent = `${data.nickname} — Starts: ${data.quiz_starts}`;
+    })
+    .catch(err => {
+        console.error('Failed to record quiz start:', err);
+    });
+
+    document.getElementById("titleCard").classList.add("hidden");
+    document.getElementById("quizCard").classList.remove("hidden");
+    // initialize remaining pool
+    remainingConsonants = consonants.slice();
+    updateHearts();
+    updateRemaining();
+    nextCard();
+}
+
+function nextCard() {
+    if (gameEnded) return;
+
+    document.getElementById("feedback").textContent = "";
+    document.getElementById("thaiName").textContent = "";
+
+    if (remainingConsonants.length === 0) {
+        gameEnded = true;
+        document.getElementById("gameOver").textContent = "Congratulations! You’ve gone through all consonants.";
+        for (let i = 0; i < 3; i++) {
+            document.getElementById("btn" + i).disabled = true;
+        }
+        updateRemaining();
+        return;
+    }
+
+    // pick a random consonant from remaining pool
+    const idx = Math.floor(Math.random() * remainingConsonants.length);
+    current = remainingConsonants[idx];
+    document.getElementById("letter").textContent = current.letter;
+
+    let wrong = consonants.filter(c => c !== current);
+    shuffle(wrong);
+
+    // options are consonant objects so we can show latin + class
+    options = [current, wrong[0], wrong[1]];
+    shuffle(options);
+
+    correctIndex = options.indexOf(current);
+
+    for (let i = 0; i < 3; i++) {
+        const btn = document.getElementById("btn" + i);
+        btn.textContent = `${options[i].latin} — ${capitalize(options[i].class)}`;
+        btn.disabled = false;
+    }
+}
+
+function checkAnswer(index) {
+    if (gameEnded) return;
+
+    const feedback = document.getElementById("feedback");
+    const thaiName = document.getElementById("thaiName");
+
+    if (index === correctIndex) {
+        feedback.textContent = "✔ Correct";
+        feedback.className = "feedback correct";
+        thaiName.textContent = `${current.thai} — ${capitalize(current.class)} class`;
+        // remove from remaining pool so we won't ask again
+        remainingConsonants = remainingConsonants.filter(c => c !== current);
+        updateRemaining();
+        setTimeout(nextCard, 1200);
+    } else {
+        lives--;
+        updateHearts();
+        feedback.textContent = "✘ Incorrect";
+        feedback.className = "feedback incorrect";
+
+        if (lives === 0) {
+            gameEnded = true;
+            document.getElementById("gameOver").textContent = "Game Over";
+            for (let i = 0; i < 3; i++) {
+                document.getElementById("btn" + i).disabled = true;
+            }
+        }
+    }
+}
+</script>
+
+</body>
+</html>
